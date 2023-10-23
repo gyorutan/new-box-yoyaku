@@ -3,27 +3,33 @@ const Post = require("../models/post");
 
 const createPost = async (req, res) => {
   try {
+    const writer = req.body.scheduleData.writer;
+    const password = req.body.scheduleData.password;
+    const time = req.body.scheduleData.time;
+    const date = new Date(req.body.value);
 
-    const writer = req.body.data.writer;
-    const password = req.body.data.password;
-    const { date, time1, time2 } = req.body.selectData;
-
-    const post = await Post.findOne({ date, time1, time2 });
-
-    if (post) {
+    if (!time) {
       return res
         .status(400)
-        .json({ success: false, message: "既に予約されている時間帯です" });
+        .json({ success: "time", message: "時間を指定してください" });
     }
+
+    const year = date.getFullYear();
+    const month = date.getMonth() + 1;
+    const day = date.getDate();
+
+    const dayOfWeek = new Date(year, month - 1, day).getDay();
+    const daysOfWeekInJapanese = ["日", "月", "火", "水", "木", "金", "土"];
+
+    const newDate = `${year}年${month}月${day}日(${daysOfWeekInJapanese[dayOfWeek]})`;
 
     const hashedPassword = await bcrypt.hash(password, 12);
 
     const newPost = await Post.create({
       writer,
       password: hashedPassword,
-      date,
-      time1,
-      time2,
+      date: newDate,
+      time,
     });
 
     return res
@@ -36,7 +42,7 @@ const createPost = async (req, res) => {
 };
 
 const getAllPosts = async (req, res) => {
-  const posts = await Post.find().sort({ createdAt: -1 });
+  const posts = await Post.find().sort({ time: 1 });
 
   return res.status(200).json(posts);
 };
@@ -65,4 +71,36 @@ const deletePost = async (req, res) => {
   }
 };
 
-module.exports = { createPost, getAllPosts, deletePost };
+const checkingPosts = async (req, res) => {
+  try {
+    const date = new Date(req.body.e);
+
+    const year = date.getFullYear();
+    const month = date.getMonth() + 1; // 월은 0부터 시작하므로 1을 더합니다.
+    const day = date.getDate();
+
+    const dayOfWeek = new Date(year, month - 1, day).getDay();
+    const daysOfWeekInJapanese = ["日", "月", "火", "水", "木", "金", "土"];
+
+    const newDate = `${year}年${month}月${day}日(${daysOfWeekInJapanese[dayOfWeek]})`;
+
+    const checkedDate = await Post.find({ date: newDate }).exec();
+
+    const reservedTimes = {
+      time: [],
+    };
+
+    checkedDate.forEach((item) => {
+      reservedTimes.time.push(item.time);
+    });
+
+    return res.status(200).json({
+      message: "예약된 시간",
+      reservedTimes,
+    });
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+module.exports = { createPost, getAllPosts, deletePost, checkingPosts };

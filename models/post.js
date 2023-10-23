@@ -14,12 +14,9 @@ const postSchema = mongoose.Schema(
       type: String,
       required: true,
     },
-    time1: {
+    time: {
       type: String,
       required: true,
-    },
-    time2: {
-      type: String,
     },
   },
   {
