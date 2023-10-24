@@ -109,13 +109,13 @@ const checkingPosts = async (req, res) => {
     console.log("저장함수 day", day);
     console.log("저장함수 day - 1", day - 1);
 
-    const dayOfWeek = new Date(year, month - 1, day - 1).getDay();
+    const dayOfWeek = new Date(year, month - 1, day).getDay();
 
     console.log("저장함수 dayOfWeek", dayOfWeek);
 
     const daysOfWeekInJapanese = ["日", "月", "火", "水", "木", "金", "土"];
 
-    const newDate = `${year}年${month}月${day - 1}日(${
+    const newDate = `${year}年${month}月${day}日(${
       daysOfWeekInJapanese[dayOfWeek]
     })`;
 
