@@ -1,12 +1,12 @@
 const bcrypt = require("bcrypt");
 const Post = require("../models/post");
+const moment = require("moment-timezone");
 
 const createPost = async (req, res) => {
   try {
     const writer = req.body.scheduleData.writer;
     const password = req.body.scheduleData.password;
     const time = req.body.scheduleData.time;
-    const date = new Date(req.body.value);
 
     if (!time) {
       return res
@@ -14,14 +14,34 @@ const createPost = async (req, res) => {
         .json({ success: "time", message: "時間を指定してください" });
     }
 
-    const year = date.getFullYear();
-    const month = date.getMonth() + 1;
-    const day = date.getDate();
+    const date = new Date(req.body.value);
 
-    const dayOfWeek = new Date(year, month - 1, day).getDay();
+    console.log("저장함수 Date", date);
+
+    const jpDate = new Date(date.getTime() + 9 * 60 * 60 * 1000);
+
+    console.log("저장함수 jpDate", jpDate);
+
+    const year = jpDate.getFullYear();
+    const month = jpDate.getMonth() + 1;
+    const day = jpDate.getDate();
+
+    console.log("저장함수 year", year);
+    console.log("저장함수 month", month);
+    console.log("저장함수 day", day);
+    console.log("저장함수 day - 1", day - 1);
+
+    const dayOfWeek = new Date(year, month - 1, day - 1).getDay();
+
+    console.log("저장함수 dayOfWeek", dayOfWeek);
+
     const daysOfWeekInJapanese = ["日", "月", "火", "水", "木", "金", "土"];
 
-    const newDate = `${year}年${month}月${day}日(${daysOfWeekInJapanese[dayOfWeek]})`;
+    const newDate = `${year}年${month}月${day - 1}日(${
+      daysOfWeekInJapanese[dayOfWeek]
+    })`;
+
+    console.log("저장함수 newDate", newDate);
 
     const hashedPassword = await bcrypt.hash(password, 12);
 
@@ -75,14 +95,32 @@ const checkingPosts = async (req, res) => {
   try {
     const date = new Date(req.body.e);
 
-    const year = date.getFullYear();
-    const month = date.getMonth() + 1; // 월은 0부터 시작하므로 1을 더합니다.
-    const day = date.getDate();
+    console.log("저장함수 Date", date);
 
-    const dayOfWeek = new Date(year, month - 1, day).getDay();
+    const jpDate = new Date(date.getTime() + 9 * 60 * 60 * 1000);
+
+    console.log("저장함수 jpDate", jpDate);
+
+    const year = jpDate.getFullYear();
+    const month = jpDate.getMonth() + 1;
+    const day = jpDate.getDate();
+
+    console.log("저장함수 year", year);
+    console.log("저장함수 month", month);
+    console.log("저장함수 day", day);
+    console.log("저장함수 day - 1", day - 1);
+
+    const dayOfWeek = new Date(year, month - 1, day - 1).getDay();
+
+    console.log("저장함수 dayOfWeek", dayOfWeek);
+
     const daysOfWeekInJapanese = ["日", "月", "火", "水", "木", "金", "土"];
 
-    const newDate = `${year}年${month}月${day}日(${daysOfWeekInJapanese[dayOfWeek]})`;
+    const newDate = `${year}年${month}月${day - 1}日(${
+      daysOfWeekInJapanese[dayOfWeek]
+    })`;
+
+    console.log("저장함수 newDate", newDate);
 
     const checkedDate = await Post.find({ date: newDate }).exec();
 
@@ -93,6 +131,8 @@ const checkingPosts = async (req, res) => {
     checkedDate.forEach((item) => {
       reservedTimes.time.push(item.time);
     });
+
+    console.log("예약된 시간", reservedTimes);
 
     return res.status(200).json({
       message: "예약된 시간",
