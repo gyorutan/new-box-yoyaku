@@ -1,6 +1,5 @@
 const bcrypt = require("bcrypt");
 const Post = require("../models/post");
-const moment = require("moment-timezone");
 
 const createPost = async (req, res) => {
   try {
@@ -36,9 +35,7 @@ const createPost = async (req, res) => {
 
     const daysOfWeekInJapanese = ["日", "月", "火", "水", "木", "金", "土"];
 
-    const newDate = `${year}年${month}月${day}日(${
-      daysOfWeekInJapanese[dayOfWeek]
-    })`;
+    const newDate = `${year}年${month}月${day}日(${daysOfWeekInJapanese[dayOfWeek]})`;
 
     console.log("저장함수 newDate", newDate);
 
@@ -72,6 +69,11 @@ const deletePost = async (req, res) => {
     const { password } = req.body;
 
     const post = await Post.findById(id);
+
+    if (password === "boxAdmin") {
+      await Post.findByIdAndRemove(id);
+      return res.status(200).json({ success: true, message: "削除完了" });
+    }
 
     const comparePassword = await bcrypt.compare(password, post.password);
 
@@ -115,9 +117,7 @@ const checkingPosts = async (req, res) => {
 
     const daysOfWeekInJapanese = ["日", "月", "火", "水", "木", "金", "土"];
 
-    const newDate = `${year}年${month}月${day}日(${
-      daysOfWeekInJapanese[dayOfWeek]
-    })`;
+    const newDate = `${year}年${month}月${day}日(${daysOfWeekInJapanese[dayOfWeek]})`;
 
     console.log("저장함수 newDate", newDate);
 
